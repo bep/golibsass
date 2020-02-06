@@ -7,9 +7,7 @@
 package libsass
 
 import (
-	"bytes"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -22,36 +20,28 @@ type libsassTranspiler struct {
 
 // New creates a new libsass transpiler configured with the given options.
 func New(options Options) (Transpiler, error) {
-	return &libsassTranspiler{options: options}, nil
+	return libsassTranspiler{options: options}, nil
 }
 
 // Execute transpiles the SCSS or SASS from src into dst.
-func (t *libsassTranspiler) Execute(dst io.Writer, src io.Reader) (Result, error) {
+func (t libsassTranspiler) Execute(dst io.Writer, src io.Reader) (Result, error) {
 	var result Result
-	var sourceBytes []byte
+	var sb strings.Builder
 
 	if t.options.SassSyntax {
 		// LibSass does not support this directly, so have to handle the main SASS content
 		// special.
-		var buf bytes.Buffer
-		err := libsass.SassToScss(&buf, src)
+		err := libsass.SassToScss(&sb, src)
 		if err != nil {
 			return result, err
 		}
-		sourceBytes = buf.Bytes()
 	} else {
-		b, err := ioutil.ReadAll(src)
-		if err != nil {
-			return result, err
-		}
-		sourceBytes = b
+		io.Copy(&sb, src)
 	}
 
-	dataCtx := libsass.SassMakeDataContext(string(sourceBytes))
+	dataCtx := libsass.SassMakeDataContext(sb.String())
 
 	opts := libsass.SassDataContextGetOptions(dataCtx)
-	defer libsass.SassDeleteOptions(opts)
-
 	{
 		// Set options
 

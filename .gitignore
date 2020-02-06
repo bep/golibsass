@@ -2,3 +2,4 @@ cover*.out
 *.test
 *.prof
 /.idea
+gen/gen

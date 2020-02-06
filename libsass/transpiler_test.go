@@ -130,7 +130,7 @@ func TestConcurrentTranspile(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -141,8 +141,8 @@ func TestConcurrentTranspile(t *testing.T) {
 div { p { color: $white; } }`)
 				var dst bytes.Buffer
 				_, err := transpiler.Execute(&dst, src)
-				c.Assert(err, qt.IsNil)
-				c.Assert(dst.String(), qt.Equals, "div p{color:#fff}\n")
+				c.Check(err, qt.IsNil)
+				c.Check(dst.String(), qt.Equals, "div p{color:#fff}\n")
 			}
 		}()
 	}

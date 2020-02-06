@@ -1,16 +1,26 @@
 
-[![Build Status](https://travis-ci.org/bep/go-tocss.svg?branch=master)](https://travis-ci.org/bep/go-tocss)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bep/go-tocss)](https://goreportcard.com/report/github.com/bep/go-tocss)
+[![Build Status](https://travis-ci.org/bep/golibsass.svg?branch=master)](https://travis-ci.org/bep/golibsass)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bep/golibsass)](https://goreportcard.com/report/github.com/bep/golibsass)
 
 
-it's possible to link against system libsass and forego C compiling with go build -tags dev.
+The primary motivation for this project is to provide `SCSS` support to [Hugo](https://gohugo.io/). I welcome PRs with bug fixes. I will also consider adding functionality, but please raise an issue discussing it first.
 
-E.g.:
+If you need functionality than this project can provide you may want to have a look at [go-libsass](https://github.com/wellington/go-libsass).
+
+## Update LibSASS
+
+This project embeds the [LibSASS](https://github.com/sass/libsass) source code as a Git subtree. To update:
+
+1. Pull in the relevant LibSASS version, e.g. `./pull-libsass.sh 3.6.3`
+2. Regenerate wrappers with `go generate ./gen`
+
+## Local development
+
+Compiling C++ code isn' particulary fast; if you install libsass on your PC you can link against that, useful during development.
+
+On a Mac you may do something like:
 
 ```bash
 brew install --HEAD libsass
-go test -v -run TestOutputStyle -tags dev
+go test ./libsass -tags dev
 ```
-
-
-The primary motivation for this project is to add `SCSS` support to [Hugo](https://gohugo.io/). It is has some generic `tocss` package names hoping that there will be a solid native Go implementation that can replace `LibSass` in the near future.
