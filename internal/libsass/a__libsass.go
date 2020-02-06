@@ -8,11 +8,14 @@ package libsass
 
 // #include "stdlib.h"
 // #include "sass/context.h"
+// #include "sass2scss.h"
 // #include <stdlib.h>
 //
 import "C"
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -146,8 +149,8 @@ func SassContextGetErrorStatus(ctx SassContext) int {
 	return int(C.sass_context_get_error_status(ctx))
 }
 
-// SassContextGetErrorJson function as declared in sass/context.h:115
-func SassContextGetErrorJson(ctx SassContext) string {
+// SassContextGetErrorJSON function as declared in sass/context.h:115
+func SassContextGetErrorJSON(ctx SassContext) string {
 	s := C.sass_context_get_error_json(ctx)
 	defer C.free(unsafe.Pointer(s))
 	return C.GoString(s)
@@ -163,6 +166,20 @@ func SassOptionGetSourceMapFile(opts SassOptions) string {
 func SassContextGetSourceMapString(ctx SassContext) string {
 	s := C.sass_context_get_source_map_string(ctx)
 	return C.GoString(s)
+}
+
+// SassToScss converts Sass to Scss using sass2scss.
+func SassToScss(dst io.Writer, src io.Reader) error {
+	b, _ := ioutil.ReadAll(src)
+	in := C.CString(string(b))
+	defer C.free(unsafe.Pointer(in))
+
+	chars := C.sass2scss(
+		in,
+		C.int(1),
+	)
+	_, err := io.WriteString(dst, C.GoString(chars))
+	return err
 }
 
 // A bridge function to C to resolve imports.

@@ -1,18 +1,26 @@
-// Copyright © 2018 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
+// Copyright © 2020 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
-
-// Package scss provides options for SCSS transpilers. Note that there are no
-// current pure Go SASS implementation, so the only option is CGO and LibSASS.
-// But hopefully, fingers crossed, this will happen.
-package scss
+//
+package libsass
 
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 )
+
+type Result struct {
+	// If source maps are configured.
+	SourceMapFilename string
+	SourceMapContent  string
+}
+
+type Transpiler interface {
+	Execute(dst io.Writer, src io.Reader) (Result, error)
+}
 
 type (
 	OutputStyle int
@@ -32,30 +40,32 @@ const (
 	compressedStyleStr = "compressed"
 )
 
-var outputStyleFromString = map[string]OutputStyle{
+var outputStyles = map[string]OutputStyle{
 	nestedStyleStr:     NestedStyle,
 	expandedStyleStr:   ExpandedStyle,
 	compactStyleStr:    CompactStyle,
 	compressedStyleStr: CompressedStyle,
 }
 
-var outputStyleToString = map[OutputStyle]string{
+var outputStylesString = map[OutputStyle]string{
 	NestedStyle:     nestedStyleStr,
 	ExpandedStyle:   expandedStyleStr,
 	CompactStyle:    compactStyleStr,
 	CompressedStyle: compressedStyleStr,
 }
 
-func OutputStyleFromString(style string) OutputStyle {
-	os, found := outputStyleFromString[strings.ToLower(style)]
+// TODO1 add a method printing the LibSass version.
+
+func getOutputStyle(style string) OutputStyle {
+	os, found := outputStyles[strings.ToLower(style)]
 	if found {
 		return os
 	}
 	return NestedStyle
 }
 
-func OutputStyleToString(style OutputStyle) string {
-	os, found := outputStyleToString[style]
+func getOutputStyleString(style OutputStyle) string {
+	os, found := outputStylesString[style]
 	if found {
 		return os
 	}
@@ -89,7 +99,7 @@ type Options struct {
 	EnableEmbeddedSourceMap bool
 }
 
-func JSONToError(jsonstr string) (e Error) {
+func jsonToError(jsonstr string) (e Error) {
 	if err := json.Unmarshal([]byte(jsonstr), &e); err != nil {
 		e.Message = "unknown error"
 	}

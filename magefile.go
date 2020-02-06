@@ -11,7 +11,7 @@ import (
 )
 
 func Gen() error {
-	dstDir := "libsass"
+	dstDir := filepath.FromSlash("internal/libsass")
 	srcDir := filepath.Join("libsass_src", "src")
 
 	// The Go and the Libsass C++ source must live side-by-side in the same

@@ -1,4 +1,4 @@
-// Copyright © 2018 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
+// Copyright © 2020 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -13,13 +13,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/bep/go-tocss/scss"
-
-	"github.com/stretchr/testify/require"
+	qt "github.com/frankban/quicktest"
 )
 
 func _TestWithImportResolver(t *testing.T) {
-	assert := require.New(t)
+	c := qt.New(t)
 	src := bytes.NewBufferString(`
 @import "colors";
 
@@ -33,16 +31,16 @@ div { p { color: $white; } }`)
 		return url, `$white:    #fff`, true
 	}
 
-	transpiler, err := New(scss.Options{ImportResolver: importResolver})
-	assert.NoError(err)
+	transpiler, err := New(Options{ImportResolver: importResolver})
+	c.Assert(err, qt.IsNil)
 
 	_, err = transpiler.Execute(&dst, src)
-	assert.NoError(err)
-	assert.Equal("div p {\n  color: #fff; }\n", dst.String())
+	c.Assert(err, qt.IsNil)
+	c.Assert(dst.String(), qt.Equals, "div p {\n  color: #fff; }\n")
 }
 
 func TestSassSyntax(t *testing.T) {
-	assert := require.New(t)
+	c := qt.New(t)
 	src := bytes.NewBufferString(`
 $color: #333;
 
@@ -52,27 +50,27 @@ $color: #333;
 
 	var dst bytes.Buffer
 
-	transpiler, err := New(scss.Options{OutputStyle: scss.CompressedStyle, SassSyntax: true})
-	assert.NoError(err)
+	transpiler, err := New(Options{OutputStyle: CompressedStyle, SassSyntax: true})
+	c.Assert(err, qt.IsNil)
 
 	_, err = transpiler.Execute(&dst, src)
-	assert.NoError(err)
-	assert.Equal(".content-navigation{border-color:#333}\n", dst.String())
+	c.Assert(err, qt.IsNil)
+	c.Assert(dst.String(), qt.Equals, ".content-navigation{border-color:#333}\n")
 }
 
 func TestOutputStyle(t *testing.T) {
-	assert := require.New(t)
+	c := qt.New(t)
 	src := bytes.NewBufferString(`
 div { p { color: #ccc; } }`)
 
 	var dst bytes.Buffer
 
-	transpiler, err := New(scss.Options{OutputStyle: scss.CompressedStyle})
-	assert.NoError(err)
+	transpiler, err := New(Options{OutputStyle: CompressedStyle})
+	c.Assert(err, qt.IsNil)
 
 	_, err = transpiler.Execute(&dst, src)
-	assert.NoError(err)
-	assert.Equal("div p{color:#ccc}\n", dst.String())
+	c.Assert(err, qt.IsNil)
+	c.Assert(dst.String(), qt.Equals, "div p{color:#ccc}\n")
 }
 
 func TestSourceMapSettings(t *testing.T) {
@@ -85,7 +83,7 @@ func TestSourceMapSettings(t *testing.T) {
 $moo:       #f442d1 !default;
 `), 0755)
 
-	assert := require.New(t)
+	c := qt.New(t)
 	src := bytes.NewBufferString(`
 @import "colors";
 
@@ -93,7 +91,7 @@ div { p { color: $moo; } }`)
 
 	var dst bytes.Buffer
 
-	transpiler, err := New(scss.Options{
+	transpiler, err := New(Options{
 		IncludePaths:            []string{dir},
 		EnableEmbeddedSourceMap: false,
 		SourceMapContents:       true,
@@ -103,31 +101,32 @@ div { p { color: $moo; } }`)
 		InputPath:               "input.scss",
 		SourceMapRoot:           "/my/root",
 	})
-	assert.NoError(err)
+	c.Assert(err, qt.IsNil)
 
 	result, err := transpiler.Execute(&dst, src)
-	assert.NoError(err)
-	assert.Equal("div p {\n  color: #f442d1; }\n\n/*# sourceMappingURL=source.map */", dst.String())
-	assert.Equal("source.map", result.SourceMapFilename)
-	assert.Contains(result.SourceMapContent, `"sourceRoot": "/my/root",`)
-	assert.Contains(result.SourceMapContent, `"file": "outout.css",`)
-	assert.Contains(result.SourceMapContent, `"input.scss",`)
-	assert.Contains(result.SourceMapContent, `mappings": "AAGA,AAAM,GAAH,CAAG,CAAC,CAAC;EAAE,KAAK,ECFH,OAAO,GDEM"`)
+	c.Assert(err, qt.IsNil)
+	c.Assert(dst.String(), qt.Equals, "div p {\n  color: #f442d1; }\n\n/*# sourceMappingURL=source.map */")
+	c.Assert(result.SourceMapFilename, qt.Equals, "source.map")
+
+	c.Assert(`"sourceRoot": "/my/root",`, qt.Contains, `"sourceRoot": "/my/root",`)
+	c.Assert(`"file": "outout.css",`, qt.Contains, `"file": "outout.css",`)
+	c.Assert(`"input.scss",`, qt.Contains, `"input.scss",`)
+	c.Assert(`mappings": "AAGA,AAAM,GAAH,CAAG,CAAC,CAAC;EAAE,KAAK,ECFH,OAAO,GDEM"`, qt.Contains, `mappings": "AAGA,AAAM,GAAH,CAAG,CAAC,CAAC;EAAE,KAAK,ECFH,OAAO,GDEM"`)
 }
 
 func TestConcurrentTranspile(t *testing.T) {
 
-	assert := require.New(t)
+	c := qt.New(t)
 
 	importResolver := func(url string, prev string) (string, string, bool) {
 		return url, `$white:    #fff`, true
 	}
 
-	transpiler, err := New(scss.Options{
-		OutputStyle:    scss.CompressedStyle,
+	transpiler, err := New(Options{
+		OutputStyle:    CompressedStyle,
 		ImportResolver: importResolver})
 
-	assert.NoError(err)
+	c.Assert(err, qt.IsNil)
 
 	var wg sync.WaitGroup
 
@@ -142,8 +141,8 @@ func TestConcurrentTranspile(t *testing.T) {
 div { p { color: $white; } }`)
 				var dst bytes.Buffer
 				_, err := transpiler.Execute(&dst, src)
-				assert.NoError(err)
-				assert.Equal("div p{color:#fff}\n", dst.String())
+				c.Assert(err, qt.IsNil)
+				c.Assert(dst.String(), qt.Equals, "div p{color:#fff}\n")
 			}
 		}()
 	}
@@ -156,7 +155,7 @@ func BenchmarkTranspile(b *testing.B) {
 
 	var src, dst bytes.Buffer
 
-	transpiler, err := New(scss.Options{OutputStyle: scss.CompressedStyle})
+	transpiler, err := New(Options{OutputStyle: CompressedStyle})
 	if err != nil {
 		b.Fatal(err)
 	}

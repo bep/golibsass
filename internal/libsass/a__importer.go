@@ -41,8 +41,9 @@ import (
 // signal loading the import body from the URL.
 type ImportResolver func(url string, prev string) (newURL string, body string, resolved bool)
 
-// BindImporter attaches a custom importer Go function to an import in Sass
-func BindImporter(opts SassOptions, resolver ImportResolver) int {
+// AddImportResolver adds a function to resolve imports in LibSASS.
+// Make sure to run call DeleteImportResolver whendone.
+func AddImportResolver(opts SassOptions, resolver ImportResolver) int {
 
 	i := imports.Set(resolver)
 	ptr := unsafe.Pointer(uintptr(i))
@@ -63,7 +64,7 @@ func BindImporter(opts SassOptions, resolver ImportResolver) int {
 	return i
 }
 
-func RemoveImporter(i int) error {
+func DeleteImportResolver(i int) error {
 	imports.Delete(i)
 	return nil
 }
