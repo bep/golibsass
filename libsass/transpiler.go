@@ -7,6 +7,8 @@
 package libsass
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 
@@ -92,4 +94,73 @@ func (t libsassTranspiler) Execute(src string) (Result, error) {
 	result.SourceMapContent = libsass.SassContextGetSourceMapString(ctx)
 
 	return result, nil
+}
+
+type Result struct {
+	CSS string
+
+	// If source maps are configured.
+	SourceMapFilename string
+	SourceMapContent  string
+}
+
+type Transpiler interface {
+	Execute(src string) (Result, error)
+}
+
+type (
+	OutputStyle int
+)
+
+const (
+	NestedStyle OutputStyle = iota
+	ExpandedStyle
+	CompactStyle
+	CompressedStyle
+)
+
+type Options struct {
+	// Default is nested.
+	OutputStyle OutputStyle
+
+	// Precision of floating point math.
+	Precision int
+
+	// File paths to use to resolve imports.
+	IncludePaths []string
+
+	// ImportResolver can be used to supply a custom import resolver, both to redirect
+	// to another URL or to return the body.
+	ImportResolver func(url string, prev string) (newURL string, body string, resolved bool)
+
+	// Used to indicate "old style" SASS for the input stream.
+	SassSyntax bool
+
+	// Source map settings
+	SourceMapFilename       string
+	SourceMapRoot           string
+	InputPath               string
+	OutputPath              string
+	SourceMapContents       bool
+	OmitSourceMapURL        bool
+	EnableEmbeddedSourceMap bool
+}
+
+func jsonToError(jsonstr string) (e Error) {
+	if err := json.Unmarshal([]byte(jsonstr), &e); err != nil {
+		e.Message = "unknown error"
+	}
+	return
+}
+
+type Error struct {
+	Status  int    `json:"status"`
+	Column  int    `json:"column"`
+	File    string `json:"file"`
+	Line    int    `json:"line"`
+	Message string `json:"message"`
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("file %q, line %d, col %d: %s ", e.File, e.Line, e.Column, e.Message)
 }
