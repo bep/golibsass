@@ -39,6 +39,7 @@ This project embeds the [LibSASS](https://github.com/sass/libsass) source code a
 1. Pull in the relevant LibSASS version, e.g. `./pull-libsass.sh 3.6.3`
 2. Regenerate wrappers with `go generate ./gen`
 3. Update the LibSass version badge above.
+4. Until [this issue is solved](https://github.com/sass/libsass/issues/3055), make sure to delete `libsass_src/test`.
 
 ## Local development
 
