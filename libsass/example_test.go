@@ -12,7 +12,7 @@ import (
 	"github.com/bep/golibsass/libsass"
 )
 
-func ExampleExecute() {
+func ExampleTranspiler() {
 	transpiler, err := libsass.New(libsass.Options{OutputStyle: libsass.CompressedStyle})
 	if err != nil {
 		log.Fatal(err)
