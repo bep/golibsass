@@ -119,6 +119,20 @@ const (
 	CompressedStyle
 )
 
+func ParseOutputStyle(s string) OutputStyle {
+	switch strings.ToLower(s) {
+	case "nested":
+		return NestedStyle
+	case "expanded":
+		return ExpandedStyle
+	case "compact":
+		return CompactStyle
+	case "compressed":
+		return CompressedStyle
+	}
+	return NestedStyle
+}
+
 type Options struct {
 	// Default is nested.
 	OutputStyle OutputStyle
