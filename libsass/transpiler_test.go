@@ -6,7 +6,6 @@
 package libsass
 
 import (
-	"bytes"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -18,12 +17,10 @@ import (
 
 func TestWithImportResolver(t *testing.T) {
 	c := qt.New(t)
-	src := bytes.NewBufferString(`
+	src := `
 @import "colors";
 
-div { p { color: $white; } }`)
-
-	var dst bytes.Buffer
+div { p { color: $white; } }`
 
 	importResolver := func(url string, prev string) (string, string, bool) {
 		// This will make every import the same, which is probably not a common use
@@ -34,43 +31,39 @@ div { p { color: $white; } }`)
 	transpiler, err := New(Options{ImportResolver: importResolver})
 	c.Assert(err, qt.IsNil)
 
-	_, err = transpiler.Execute(&dst, src)
+	result, err := transpiler.Execute(src)
 	c.Assert(err, qt.IsNil)
-	c.Assert(dst.String(), qt.Equals, "div p {\n  color: #fff; }\n")
+	c.Assert(result.CSS, qt.Equals, "div p {\n  color: #fff; }\n")
 }
 
 func TestSassSyntax(t *testing.T) {
 	c := qt.New(t)
-	src := bytes.NewBufferString(`
+	src := `
 $color: #333;
 
 .content-navigation
   border-color: $color
-`)
-
-	var dst bytes.Buffer
+`
 
 	transpiler, err := New(Options{OutputStyle: CompressedStyle, SassSyntax: true})
 	c.Assert(err, qt.IsNil)
 
-	_, err = transpiler.Execute(&dst, src)
+	result, err := transpiler.Execute(src)
 	c.Assert(err, qt.IsNil)
-	c.Assert(dst.String(), qt.Equals, ".content-navigation{border-color:#333}\n")
+	c.Assert(result.CSS, qt.Equals, ".content-navigation{border-color:#333}\n")
 }
 
 func TestOutputStyle(t *testing.T) {
 	c := qt.New(t)
-	src := bytes.NewBufferString(`
-div { p { color: #ccc; } }`)
-
-	var dst bytes.Buffer
+	src := `
+div { p { color: #ccc; } }`
 
 	transpiler, err := New(Options{OutputStyle: CompressedStyle})
 	c.Assert(err, qt.IsNil)
 
-	_, err = transpiler.Execute(&dst, src)
+	result, err := transpiler.Execute(src)
 	c.Assert(err, qt.IsNil)
-	c.Assert(dst.String(), qt.Equals, "div p{color:#ccc}\n")
+	c.Assert(result.CSS, qt.Equals, "div p{color:#ccc}\n")
 }
 
 func TestSourceMapSettings(t *testing.T) {
@@ -84,12 +77,10 @@ $moo:       #f442d1 !default;
 `), 0755)
 
 	c := qt.New(t)
-	src := bytes.NewBufferString(`
+	src := `
 @import "colors";
 
-div { p { color: $moo; } }`)
-
-	var dst bytes.Buffer
+div { p { color: $moo; } }`
 
 	transpiler, err := New(Options{
 		IncludePaths:            []string{dir},
@@ -103,9 +94,9 @@ div { p { color: $moo; } }`)
 	})
 	c.Assert(err, qt.IsNil)
 
-	result, err := transpiler.Execute(&dst, src)
+	result, err := transpiler.Execute(src)
 	c.Assert(err, qt.IsNil)
-	c.Assert(dst.String(), qt.Equals, "div p {\n  color: #f442d1; }\n\n/*# sourceMappingURL=source.map */")
+	c.Assert(result.CSS, qt.Equals, "div p {\n  color: #f442d1; }\n\n/*# sourceMappingURL=source.map */")
 	c.Assert(result.SourceMapFilename, qt.Equals, "source.map")
 
 	c.Assert(`"sourceRoot": "/my/root",`, qt.Contains, `"sourceRoot": "/my/root",`)
@@ -135,14 +126,13 @@ func TestConcurrentTranspile(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			for j := 0; j < 10; j++ {
-				src := bytes.NewBufferString(`
+				src := `
 @import "colors";
 
-div { p { color: $white; } }`)
-				var dst bytes.Buffer
-				_, err := transpiler.Execute(&dst, src)
+div { p { color: $white; } }`
+				result, err := transpiler.Execute(src)
 				c.Check(err, qt.IsNil)
-				c.Check(dst.String(), qt.Equals, "div p{color:#fff}\n")
+				c.Check(result.CSS, qt.Equals, "div p{color:#fff}\n")
 			}
 		}()
 	}
@@ -151,9 +141,7 @@ div { p { color: $white; } }`)
 
 func BenchmarkTranspile(b *testing.B) {
 	type tester struct {
-		src        bytes.Buffer
-		dst        bytes.Buffer
-		srcs       string
+		src        string
 		expect     string
 		transpiler Transpiler
 	}
@@ -172,21 +160,19 @@ func BenchmarkTranspile(b *testing.B) {
 	runBench := func(b *testing.B, t tester) {
 		b.ResetTimer()
 		for n := 0; n < b.N; n++ {
-			t.src.Reset()
-			t.dst.Reset()
-			t.src.WriteString(t.srcs)
-			if _, err := t.transpiler.Execute(&t.dst, &t.src); err != nil {
+			result, err := t.transpiler.Execute(t.src)
+			if err != nil {
 				b.Fatal(err)
 			}
-			if t.dst.String() != t.expect {
-				b.Fatal("Got:", t.dst.String())
+			if result.CSS != t.expect {
+				b.Fatal("Got:", result.CSS)
 			}
 		}
 	}
 
 	b.Run("SCSS", func(b *testing.B) {
 		t := newTester(b, Options{OutputStyle: CompressedStyle})
-		t.srcs = `div { p { color: #ccc; } }`
+		t.src = `div { p { color: #ccc; } }`
 		t.expect = "div p{color:#ccc}\n"
 		runBench(b, t)
 
@@ -194,7 +180,7 @@ func BenchmarkTranspile(b *testing.B) {
 
 	b.Run("Sass", func(b *testing.B) {
 		t := newTester(b, Options{OutputStyle: CompressedStyle, SassSyntax: true})
-		t.srcs = `
+		t.src = `
 $color: #333;
 
 .content-navigation

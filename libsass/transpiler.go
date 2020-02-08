@@ -7,7 +7,6 @@
 package libsass
 
 import (
-	"io"
 	"os"
 	"strings"
 
@@ -24,23 +23,20 @@ func New(options Options) (Transpiler, error) {
 }
 
 // Execute transpiles the SCSS or SASS from src into dst.
-func (t libsassTranspiler) Execute(dst io.Writer, src io.Reader) (Result, error) {
+func (t libsassTranspiler) Execute(src string) (Result, error) {
 	var result Result
-	var sb strings.Builder
-	io.Copy(&sb, src)
-	srcs := sb.String()
 
 	if t.options.SassSyntax {
 		// LibSass does not support this directly, so have to handle the main SASS content
 		// special.
 		var err error
-		srcs, err = libsass.SassToScss(srcs)
+		src, err = libsass.SassToScss(src)
 		if err != nil {
 			return result, err
 		}
 	}
 
-	dataCtx := libsass.SassMakeDataContext(srcs)
+	dataCtx := libsass.SassMakeDataContext(src)
 
 	opts := libsass.SassDataContextGetOptions(dataCtx)
 	{
@@ -86,9 +82,7 @@ func (t libsassTranspiler) Execute(dst io.Writer, src io.Reader) (Result, error)
 	libsass.SassCompilerParse(compiler)
 	libsass.SassCompilerExecute(compiler)
 
-	outputString := libsass.SassContextGetOutputString(ctx)
-
-	io.WriteString(dst, outputString)
+	result.CSS = libsass.SassContextGetOutputString(ctx)
 
 	if status := libsass.SassContextGetErrorStatus(ctx); status != 0 {
 		return result, jsonToError(libsass.SassContextGetErrorJSON(ctx))

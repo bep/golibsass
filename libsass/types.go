@@ -8,18 +8,19 @@ package libsass
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 )
 
 type Result struct {
+	CSS string
+
 	// If source maps are configured.
 	SourceMapFilename string
 	SourceMapContent  string
 }
 
 type Transpiler interface {
-	Execute(dst io.Writer, src io.Reader) (Result, error)
+	Execute(src string) (Result, error)
 }
 
 type (
