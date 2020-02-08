@@ -1,3 +1,8 @@
+// Copyright © 2020 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
+//
+// Use of this source code is governed by an MIT-style
+// license that can be found in the LICENSE file.
+//
 package libsass
 
 // #cgo CFLAGS: -O2 -fPIC
