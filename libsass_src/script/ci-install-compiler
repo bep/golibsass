@@ -1,0 +1,7 @@
+#!/bin/bash
+
+gem install minitest
+gem install minitap
+gem install hrx
+
+pip2 install --user 'requests[security]'
