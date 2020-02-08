@@ -16,8 +16,7 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
-// TODO1
-func _TestWithImportResolver(t *testing.T) {
+func TestWithImportResolver(t *testing.T) {
 	c := qt.New(t)
 	src := bytes.NewBufferString(`
 @import "colors";
