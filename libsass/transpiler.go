@@ -27,19 +27,20 @@ func New(options Options) (Transpiler, error) {
 func (t libsassTranspiler) Execute(dst io.Writer, src io.Reader) (Result, error) {
 	var result Result
 	var sb strings.Builder
+	io.Copy(&sb, src)
+	srcs := sb.String()
 
 	if t.options.SassSyntax {
 		// LibSass does not support this directly, so have to handle the main SASS content
 		// special.
-		err := libsass.SassToScss(&sb, src)
+		var err error
+		srcs, err = libsass.SassToScss(srcs)
 		if err != nil {
 			return result, err
 		}
-	} else {
-		io.Copy(&sb, src)
 	}
 
-	dataCtx := libsass.SassMakeDataContext(sb.String())
+	dataCtx := libsass.SassMakeDataContext(srcs)
 
 	opts := libsass.SassDataContextGetOptions(dataCtx)
 	{

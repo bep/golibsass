@@ -7,8 +7,6 @@ package libsass
 // #include "sass2scss.h"
 import "C"
 import (
-	"io"
-	"io/ioutil"
 	"reflect"
 	"unsafe"
 )
@@ -199,15 +197,15 @@ func SassOptionSetSourceMapRoot(o SassOptions, s string) {
 }
 
 // SassToScss converts Sass to Scss using sass2scss.
-func SassToScss(dst io.Writer, src io.Reader) error {
-	b, _ := ioutil.ReadAll(src)
-	in := C.CString(string(b))
+func SassToScss(src string) (string, error) {
+	in := C.CString(src)
 	defer C.free(unsafe.Pointer(in))
 
 	chars := C.sass2scss(
 		in,
 		C.int(1),
 	)
-	_, err := io.WriteString(dst, C.GoString(chars))
-	return err
+
+	return C.GoString(chars), nil
+
 }
