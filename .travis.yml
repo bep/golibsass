@@ -61,4 +61,5 @@ install:
 
 script:
   - go mod download || true
+  - go vet ./...
   - go test -race ./libsass
