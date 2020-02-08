@@ -16,6 +16,7 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
+// TODO1
 func _TestWithImportResolver(t *testing.T) {
 	c := qt.New(t)
 	src := bytes.NewBufferString(`
@@ -149,27 +150,60 @@ div { p { color: $white; } }`)
 	wg.Wait()
 }
 
-//  3000	    397942 ns/op	    2192 B/op	       4 allocs/op
 func BenchmarkTranspile(b *testing.B) {
-	srcs := `div { p { color: #ccc; } }`
-
-	var src, dst bytes.Buffer
-
-	transpiler, err := New(Options{OutputStyle: CompressedStyle})
-	if err != nil {
-		b.Fatal(err)
+	type tester struct {
+		src        bytes.Buffer
+		dst        bytes.Buffer
+		srcs       string
+		expect     string
+		transpiler Transpiler
 	}
 
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		src.Reset()
-		dst.Reset()
-		src.WriteString(srcs)
-		if _, err := transpiler.Execute(&dst, &src); err != nil {
+	newTester := func(b *testing.B, opts Options) tester {
+		transpiler, err := New(opts)
+		if err != nil {
 			b.Fatal(err)
 		}
-		if dst.String() != "div p{color:#ccc}\n" {
-			b.Fatal("Got:", dst.String())
+
+		return tester{
+			transpiler: transpiler,
 		}
 	}
+
+	runBench := func(b *testing.B, t tester) {
+		b.ResetTimer()
+		for n := 0; n < b.N; n++ {
+			t.src.Reset()
+			t.dst.Reset()
+			t.src.WriteString(t.srcs)
+			if _, err := t.transpiler.Execute(&t.dst, &t.src); err != nil {
+				b.Fatal(err)
+			}
+			if t.dst.String() != t.expect {
+				b.Fatal("Got:", t.dst.String())
+			}
+		}
+	}
+
+	b.Run("SCSS", func(b *testing.B) {
+		t := newTester(b, Options{OutputStyle: CompressedStyle})
+		t.srcs = `div { p { color: #ccc; } }`
+		t.expect = "div p{color:#ccc}\n"
+		runBench(b, t)
+
+	})
+
+	b.Run("Sass", func(b *testing.B) {
+		t := newTester(b, Options{OutputStyle: CompressedStyle, SassSyntax: true})
+		t.srcs = `
+$color: #333;
+
+.content-navigation
+  border-color: $color`
+
+		t.expect = ".content-navigation{border-color:#333}\n"
+		runBench(b, t)
+
+	})
+
 }
