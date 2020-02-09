@@ -31,11 +31,7 @@ func (t libsassTranspiler) Execute(src string) (Result, error) {
 	if t.options.SassSyntax {
 		// LibSass does not support this directly, so have to handle the main SASS content
 		// special.
-		var err error
-		src, err = libsass.SassToScss(src)
-		if err != nil {
-			return result, err
-		}
+		src = libsass.SassToScss(src)
 	}
 
 	dataCtx := libsass.SassMakeDataContext(src)
@@ -119,6 +115,8 @@ const (
 	CompressedStyle
 )
 
+// ParseOutputStyle will convert s into OutputStyle.
+// Case insensitive, returns NestedStyle for unknown values.
 func ParseOutputStyle(s string) OutputStyle {
 	switch strings.ToLower(s) {
 	case "nested":
@@ -164,9 +162,7 @@ type SourceMapOptions struct {
 }
 
 func jsonToError(jsonstr string) (e Error) {
-	if err := json.Unmarshal([]byte(jsonstr), &e); err != nil {
-		e.Message = "unknown error"
-	}
+	_ = json.Unmarshal([]byte(jsonstr), &e)
 	return
 }
 

@@ -15,12 +15,8 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
-func TestWithImportResolver(t *testing.T) {
+func TestTranspiler(t *testing.T) {
 	c := qt.New(t)
-	src := `
-@import "colors";
-
-div { p { color: $white; } }`
 
 	importResolver := func(url string, prev string) (string, string, bool) {
 		// This will make every import the same, which is probably not a common use
@@ -28,42 +24,51 @@ div { p { color: $white; } }`
 		return url, `$white:    #fff`, true
 	}
 
-	transpiler, err := New(Options{ImportResolver: importResolver})
-	c.Assert(err, qt.IsNil)
+	for _, test := range []struct {
+		name   string
+		opts   Options
+		src    string
+		expect interface{}
+	}{
+		{"Output style compressed", Options{OutputStyle: CompressedStyle}, "div { color: #ccc; }", "div{color:#ccc}\n"},
+		{"Invalid syntax", Options{OutputStyle: CompressedStyle}, "div { color: $white; }", false},
+		{"Sass syntax", Options{OutputStyle: CompressedStyle, SassSyntax: true}, "$color: #ccc\ndiv { p { color: $color; } }", "div p{color:#ccc}\n"},
+		{"Import resolver", Options{ImportResolver: importResolver}, "@import \"colors\";\ndiv { p { color: $white; } }", "div p {\n  color: #fff; }\n"},
+		{"Precision", Options{Precision: 3}, "div { width: percentage(1 / 3); }", "div {\n  width: 33.333%; }\n"},
+	} {
 
-	result, err := transpiler.Execute(src)
-	c.Assert(err, qt.IsNil)
-	c.Assert(result.CSS, qt.Equals, "div p {\n  color: #fff; }\n")
+		test := test
+		c.Run(test.name, func(c *qt.C) {
+			b, ok := test.expect.(bool)
+			shouldFail := ok && !b
+
+			transpiler, err := New(test.opts)
+			c.Assert(err, qt.IsNil)
+			result, err := transpiler.Execute(test.src)
+			if shouldFail {
+				c.Assert(err, qt.Not(qt.IsNil))
+			} else {
+				c.Assert(err, qt.IsNil)
+				c.Assert(result.CSS, qt.Equals, test.expect)
+			}
+
+		})
+
+	}
 }
 
-func TestSassSyntax(t *testing.T) {
+func TestError(t *testing.T) {
 	c := qt.New(t)
-	src := `
-$color: #333;
-
-.content-navigation
-  border-color: $color
-`
-
-	transpiler, err := New(Options{OutputStyle: CompressedStyle, SassSyntax: true})
-	c.Assert(err, qt.IsNil)
-
-	result, err := transpiler.Execute(src)
-	c.Assert(err, qt.IsNil)
-	c.Assert(result.CSS, qt.Equals, ".content-navigation{border-color:#333}\n")
-}
-
-func TestOutputStyle(t *testing.T) {
-	c := qt.New(t)
-	src := `
-div { p { color: #ccc; } }`
-
 	transpiler, err := New(Options{OutputStyle: CompressedStyle})
 	c.Assert(err, qt.IsNil)
+	_, err = transpiler.Execute("\n\ndiv { color: $blue; }")
+	c.Assert(err, qt.Not(qt.IsNil))
 
-	result, err := transpiler.Execute(src)
-	c.Assert(err, qt.IsNil)
-	c.Assert(result.CSS, qt.Equals, "div p{color:#ccc}\n")
+	lerr := err.(Error)
+	c.Assert(lerr.Line, qt.Equals, 3)
+	c.Assert(lerr.Column, qt.Equals, 14)
+	c.Assert(lerr.Message, qt.Equals, `Undefined variable: "$blue".`)
+	c.Assert(lerr.Error(), qt.Equals, `file "stdin", line 3, col 14: Undefined variable: "$blue". `)
 }
 
 func TestSourceMapSettings(t *testing.T) {
@@ -192,5 +197,16 @@ $color: #333;
 		runBench(b, t)
 
 	})
+
+}
+
+func TestParseOutputStyle(t *testing.T) {
+	c := qt.New(t)
+	c.Assert(ParseOutputStyle("nested"), qt.Equals, NestedStyle)
+	c.Assert(ParseOutputStyle("expanded"), qt.Equals, ExpandedStyle)
+	c.Assert(ParseOutputStyle("compact"), qt.Equals, CompactStyle)
+	c.Assert(ParseOutputStyle("compressed"), qt.Equals, CompressedStyle)
+	c.Assert(ParseOutputStyle("EXPANDED"), qt.Equals, ExpandedStyle)
+	c.Assert(ParseOutputStyle("foo"), qt.Equals, NestedStyle)
 
 }

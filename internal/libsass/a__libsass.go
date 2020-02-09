@@ -200,7 +200,7 @@ func SassOptionSetSourceMapRoot(o SassOptions, s string) {
 }
 
 // SassToScss converts Sass to Scss using sass2scss.
-func SassToScss(src string) (string, error) {
+func SassToScss(src string) string {
 	in := C.CString(src)
 	defer C.free(unsafe.Pointer(in))
 
@@ -209,6 +209,6 @@ func SassToScss(src string) (string, error) {
 		C.int(1),
 	)
 
-	return C.GoString(chars), nil
+	return C.GoString(chars)
 
 }
