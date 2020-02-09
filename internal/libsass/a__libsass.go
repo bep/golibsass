@@ -20,36 +20,32 @@ import (
 func BridgeImport(currPath, prevPath *C.char, ci C.int) C.Sass_Import_List {
 	parent := C.GoString(prevPath)
 	rel := C.GoString(currPath)
-	list := C.sass_make_import_list(1)
+	clist := C.sass_make_import_list(1)
 	h := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(list)),
+		Data: uintptr(unsafe.Pointer(clist)),
 		Len:  1, Cap: 1,
 	}
-	l := *(*[]C.Sass_Import_Entry)(unsafe.Pointer(&h))
+	golist := *(*[]C.Sass_Import_Entry)(unsafe.Pointer(&h))
 
 	resolver, ok := importsStore.Get(int(ci)).(ImportResolver)
-	if !ok {
-		ent := C.sass_make_import_entry(currPath, nil, nil)
-		cent := (C.Sass_Import_Entry)(ent)
-		l[0] = cent
-		return list
+	if ok {
+		npath, body, ok := resolver(rel, parent)
+		if ok {
+			var bodyv *C.char // nil signals loading from the path.
+			if body != "" {
+				bodyv = C.CString(body)
+			}
+			entry := C.sass_make_import_entry(C.CString(npath), bodyv, nil)
+			centry := (C.Sass_Import_Entry)(entry)
+			golist[0] = centry
+			return clist
+		}
 	}
 
-	nurl, body, ok := resolver(rel, parent)
-	if !ok {
-		return list
-	}
-
-	var bodyv *C.char
-	if body != "" {
-		bodyv = C.CString(body)
-	}
-	entry := C.sass_make_import_entry(C.CString(nurl), bodyv, nil)
-	centry := (C.Sass_Import_Entry)(entry)
-	l[0] = centry
-
-	return list
-
+	ent := C.sass_make_import_entry(currPath, nil, nil)
+	cent := (C.Sass_Import_Entry)(ent)
+	golist[0] = cent
+	return clist
 }
 
 // SassCompilerExecute function as declared in sass/context.h:48

@@ -73,23 +73,11 @@ func TestError(t *testing.T) {
 }
 
 func TestSourceMapSettings(t *testing.T) {
-	dir, _ := ioutil.TempDir(os.TempDir(), "tocss")
-	defer os.RemoveAll(dir)
-
-	colors := filepath.Join(dir, "_colors.scss")
-
-	ioutil.WriteFile(colors, []byte(`
-$moo:       #f442d1 !default;
-`), 0755)
 
 	c := qt.New(t)
-	src := `
-@import "colors";
-
-div { p { color: $moo; } }`
+	src := `div { p { color: blue; } }`
 
 	transpiler, err := New(Options{
-		IncludePaths: []string{dir},
 		SourceMapOptions: SourceMapOptions{
 			EnableEmbedded: false,
 			Contents:       true,
@@ -104,13 +92,51 @@ div { p { color: $moo; } }`
 
 	result, err := transpiler.Execute(src)
 	c.Assert(err, qt.IsNil)
-	c.Assert(result.CSS, qt.Equals, "div p {\n  color: #f442d1; }\n\n/*# sourceMappingURL=source.map */")
+	c.Assert(result.CSS, qt.Equals, "div p {\n  color: blue; }\n\n/*# sourceMappingURL=source.map */")
 	c.Assert(result.SourceMapFilename, qt.Equals, "source.map")
-
 	c.Assert(`"sourceRoot": "/my/root",`, qt.Contains, `"sourceRoot": "/my/root",`)
 	c.Assert(`"file": "outout.css",`, qt.Contains, `"file": "outout.css",`)
 	c.Assert(`"input.scss",`, qt.Contains, `"input.scss",`)
 	c.Assert(`mappings": "AAGA,AAAM,GAAH,CAAG,CAAC,CAAC;EAAE,KAAK,ECFH,OAAO,GDEM"`, qt.Contains, `mappings": "AAGA,AAAM,GAAH,CAAG,CAAC,CAAC;EAAE,KAAK,ECFH,OAAO,GDEM"`)
+}
+
+func TestIncludePaths(t *testing.T) {
+	dir1, _ := ioutil.TempDir(os.TempDir(), "libsass-test-include-paths-dir1")
+	defer os.RemoveAll(dir1)
+	dir2, _ := ioutil.TempDir(os.TempDir(), "libsass-test-include-paths-dir2")
+	defer os.RemoveAll(dir2)
+
+	colors := filepath.Join(dir1, "_colors.scss")
+	content := filepath.Join(dir2, "_content.scss")
+
+	ioutil.WriteFile(colors, []byte(`
+$moo:       #f442d1 !default;
+`), 0755)
+
+	ioutil.WriteFile(content, []byte(`
+content { color: #ccc; }
+`), 0755)
+
+	c := qt.New(t)
+	src := `
+@import "colors";
+@import "content";
+div { p { color: $moo; } }`
+
+	transpiler, err := New(Options{
+		IncludePaths: []string{dir1, dir2},
+		OutputStyle:  CompressedStyle,
+		ImportResolver: func(url string, prev string) (newUrl string, body string, resolved bool) {
+			// Let LibSass resolve the import.
+			return "", "", false
+		},
+	})
+	c.Assert(err, qt.IsNil)
+
+	result, err := transpiler.Execute(src)
+	c.Assert(err, qt.IsNil)
+	c.Assert(result.CSS, qt.Equals, "content{color:#ccc}div p{color:#f442d1}\n")
+
 }
 
 func TestConcurrentTranspile(t *testing.T) {
