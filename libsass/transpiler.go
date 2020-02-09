@@ -65,7 +65,7 @@ func (t libsassTranspiler) Execute(src string) (Result, error) {
 		}
 
 		libsass.SassOptionSetSourceMapContents(opts, t.options.SourceMapOptions.Contents)
-		libsass.SassOptionSetOmitSourceMapURL(opts, t.options.SourceMapOptions.OmitSourceMapURL)
+		libsass.SassOptionSetOmitSourceMapURL(opts, t.options.SourceMapOptions.OmitURL)
 		libsass.SassOptionSetSourceMapEmbed(opts, t.options.SourceMapOptions.EnableEmbedded)
 		libsass.SassOptionSetIncludePath(opts, strings.Join(t.options.IncludePaths, string(os.PathListSeparator)))
 		libsass.SassOptionSetOutputStyle(opts, int(t.options.OutputStyle))
@@ -80,12 +80,11 @@ func (t libsassTranspiler) Execute(src string) (Result, error) {
 	libsass.SassCompilerParse(compiler)
 	libsass.SassCompilerExecute(compiler)
 
-	result.CSS = libsass.SassContextGetOutputString(ctx)
-
 	if status := libsass.SassContextGetErrorStatus(ctx); status != 0 {
 		return result, jsonToError(libsass.SassContextGetErrorJSON(ctx))
 	}
 
+	result.CSS = libsass.SassContextGetOutputString(ctx)
 	result.SourceMapFilename = libsass.SassOptionGetSourceMapFile(opts)
 	result.SourceMapContent = libsass.SassContextGetSourceMapString(ctx)
 
@@ -148,17 +147,17 @@ type Options struct {
 	// Used to indicate "old style" SASS for the input stream.
 	SassSyntax bool
 
-	SourceMapOptions
+	SourceMapOptions SourceMapOptions
 }
 
 type SourceMapOptions struct {
-	Filename         string
-	Root             string
-	InputPath        string
-	OutputPath       string
-	Contents         bool
-	OmitSourceMapURL bool
-	EnableEmbedded   bool
+	Filename       string
+	Root           string
+	InputPath      string
+	OutputPath     string
+	Contents       bool
+	OmitURL        bool
+	EnableEmbedded bool
 }
 
 func jsonToError(jsonstr string) (e Error) {

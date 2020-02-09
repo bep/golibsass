@@ -32,6 +32,7 @@ func TestTranspiler(t *testing.T) {
 	}{
 		{"Output style compressed", Options{OutputStyle: CompressedStyle}, "div { color: #ccc; }", "div{color:#ccc}\n"},
 		{"Invalid syntax", Options{OutputStyle: CompressedStyle}, "div { color: $white; }", false},
+		{"Import not found", Options{OutputStyle: CompressedStyle}, "@import \"foo\"", false},
 		{"Sass syntax", Options{OutputStyle: CompressedStyle, SassSyntax: true}, "$color: #ccc\ndiv { p { color: $color; } }", "div p{color:#ccc}\n"},
 		{"Import resolver", Options{ImportResolver: importResolver}, "@import \"colors\";\ndiv { p { color: $white; } }", "div p {\n  color: #fff; }\n"},
 		{"Precision", Options{Precision: 3}, "div { width: percentage(1 / 3); }", "div {\n  width: 33.333%; }\n"},
@@ -90,13 +91,13 @@ div { p { color: $moo; } }`
 	transpiler, err := New(Options{
 		IncludePaths: []string{dir},
 		SourceMapOptions: SourceMapOptions{
-			EnableEmbedded:   false,
-			Contents:         true,
-			OmitSourceMapURL: false,
-			Filename:         "source.map",
-			OutputPath:       "outout.css",
-			InputPath:        "input.scss",
-			Root:             "/my/root",
+			EnableEmbedded: false,
+			Contents:       true,
+			OmitURL:        false,
+			Filename:       "source.map",
+			OutputPath:     "outout.css",
+			InputPath:      "input.scss",
+			Root:           "/my/root",
 		},
 	})
 	c.Assert(err, qt.IsNil)
