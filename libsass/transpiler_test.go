@@ -83,14 +83,16 @@ $moo:       #f442d1 !default;
 div { p { color: $moo; } }`
 
 	transpiler, err := New(Options{
-		IncludePaths:            []string{dir},
-		EnableEmbeddedSourceMap: false,
-		SourceMapContents:       true,
-		OmitSourceMapURL:        false,
-		SourceMapFilename:       "source.map",
-		OutputPath:              "outout.css",
-		InputPath:               "input.scss",
-		SourceMapRoot:           "/my/root",
+		IncludePaths: []string{dir},
+		SourceMapOptions: SourceMapOptions{
+			EnableEmbedded:   false,
+			Contents:         true,
+			OmitSourceMapURL: false,
+			Filename:         "source.map",
+			OutputPath:       "outout.css",
+			InputPath:        "input.scss",
+			Root:             "/my/root",
+		},
 	})
 	c.Assert(err, qt.IsNil)
 

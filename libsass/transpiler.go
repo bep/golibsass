@@ -53,24 +53,24 @@ func (t libsassTranspiler) Execute(src string) (Result, error) {
 			libsass.SassOptionSetPrecision(opts, t.options.Precision)
 		}
 
-		if t.options.SourceMapFilename != "" {
-			libsass.SassOptionSetSourceMapFile(opts, t.options.SourceMapFilename)
+		if t.options.SourceMapOptions.Filename != "" {
+			libsass.SassOptionSetSourceMapFile(opts, t.options.SourceMapOptions.Filename)
 		}
 
-		if t.options.SourceMapRoot != "" {
-			libsass.SassOptionSetSourceMapRoot(opts, t.options.SourceMapRoot)
+		if t.options.SourceMapOptions.Root != "" {
+			libsass.SassOptionSetSourceMapRoot(opts, t.options.SourceMapOptions.Root)
 		}
 
-		if t.options.OutputPath != "" {
-			libsass.SassOptionSetOutputPath(opts, t.options.OutputPath)
+		if t.options.SourceMapOptions.OutputPath != "" {
+			libsass.SassOptionSetOutputPath(opts, t.options.SourceMapOptions.OutputPath)
 		}
-		if t.options.InputPath != "" {
-			libsass.SassOptionSetInputPath(opts, t.options.InputPath)
+		if t.options.SourceMapOptions.InputPath != "" {
+			libsass.SassOptionSetInputPath(opts, t.options.SourceMapOptions.InputPath)
 		}
 
-		libsass.SassOptionSetSourceMapContents(opts, t.options.SourceMapContents)
-		libsass.SassOptionSetOmitSourceMapURL(opts, t.options.OmitSourceMapURL)
-		libsass.SassOptionSetSourceMapEmbed(opts, t.options.EnableEmbeddedSourceMap)
+		libsass.SassOptionSetSourceMapContents(opts, t.options.SourceMapOptions.Contents)
+		libsass.SassOptionSetOmitSourceMapURL(opts, t.options.SourceMapOptions.OmitSourceMapURL)
+		libsass.SassOptionSetSourceMapEmbed(opts, t.options.SourceMapOptions.EnableEmbedded)
 		libsass.SassOptionSetIncludePath(opts, strings.Join(t.options.IncludePaths, string(os.PathListSeparator)))
 		libsass.SassOptionSetOutputStyle(opts, int(t.options.OutputStyle))
 		libsass.SassOptionSetSourceComments(opts, false)
@@ -150,14 +150,17 @@ type Options struct {
 	// Used to indicate "old style" SASS for the input stream.
 	SassSyntax bool
 
-	// Source map settings
-	SourceMapFilename       string
-	SourceMapRoot           string
-	InputPath               string
-	OutputPath              string
-	SourceMapContents       bool
-	OmitSourceMapURL        bool
-	EnableEmbeddedSourceMap bool
+	SourceMapOptions
+}
+
+type SourceMapOptions struct {
+	Filename         string
+	Root             string
+	InputPath        string
+	OutputPath       string
+	Contents         bool
+	OmitSourceMapURL bool
+	EnableEmbedded   bool
 }
 
 func jsonToError(jsonstr string) (e Error) {
