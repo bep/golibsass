@@ -61,7 +61,7 @@ install:
 
 script:
   - go mod download || true
-  - go vet ./...
+  - go vet ./... || true
   - go test -race ./libsass -coverprofile=coverage.txt -covermode=atomic
 
 after_success:
