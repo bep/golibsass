@@ -6,6 +6,7 @@
 package libsass
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -167,10 +168,55 @@ div { p { color: $white; } }`
 				result, err := transpiler.Execute(src)
 				c.Check(err, qt.IsNil)
 				c.Check(result.CSS, qt.Equals, "div p{color:#fff}\n")
+				if c.Failed() {
+					return
+				}
 			}
 		}()
 	}
 	wg.Wait()
+}
+
+func TestImportResolverConcurrent(t *testing.T) {
+	c := qt.New(t)
+
+	createImportResolver := func(width int) func(url string, prev string) (string, string, bool) {
+		return func(url string, prev string) (string, string, bool) {
+			return url, fmt.Sprintf(`$width:  %d`, width), true
+		}
+	}
+
+	var wg sync.WaitGroup
+
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			for j := 0; j < 100; j++ {
+				transpiler, err := New(Options{
+					OutputStyle:    CompressedStyle,
+					ImportResolver: createImportResolver(j)})
+				c.Check(err, qt.IsNil)
+
+				src := `
+@import "widths";
+
+div { p { width: $width; } }`
+
+				for k := 0; k < 10; k++ {
+					result, err := transpiler.Execute(src)
+					c.Check(err, qt.IsNil)
+					c.Check(result.CSS, qt.Equals, fmt.Sprintf("div p{width:%d}\n", j))
+					if c.Failed() {
+						return
+					}
+				}
+			}
+		}()
+	}
+	wg.Wait()
+
 }
 
 func BenchmarkTranspile(b *testing.B) {
