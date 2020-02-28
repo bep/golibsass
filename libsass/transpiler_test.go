@@ -112,11 +112,11 @@ func TestIncludePaths(t *testing.T) {
 
 	ioutil.WriteFile(colors, []byte(`
 $moo:       #f442d1 !default;
-`), 0755)
+`), 0644)
 
 	ioutil.WriteFile(content, []byte(`
 content { color: #ccc; }
-`), 0755)
+`), 0644)
 
 	c := qt.New(t)
 	src := `
