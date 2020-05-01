@@ -1,7 +1,7 @@
 
 [![Build Status](https://travis-ci.org/bep/golibsass.svg?branch=master)](https://travis-ci.org/bep/golibsass)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bep/golibsass)](https://goreportcard.com/report/github.com/bep/golibsass)
-[![LibSass Version](https://img.shields.io/badge/LibSass-v3.6.3-blue)](https://github.com/sass/libsass)
+[![LibSass Version](https://img.shields.io/badge/LibSass-v3.6.4-blue)](https://github.com/sass/libsass)
 [![codecov](https://codecov.io/gh/bep/golibsass/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/golibsass)
 [![GoDoc](https://godoc.org/github.com/bep/golibsass/libsass?status.svg)](https://godoc.org/github.com/bep/golibsass/libsass)
 
@@ -39,7 +39,6 @@ This project embeds the [LibSASS](https://github.com/sass/libsass) source code a
 1. Pull in the relevant LibSASS version, e.g. `./pull-libsass.sh 3.6.3`
 2. Regenerate wrappers with `go generate ./gen`
 3. Update the LibSass version badge above.
-4. Until [this issue is solved](https://github.com/sass/libsass/issues/3055), make sure to delete `libsass_src/test`.
 
 ## Local development
 
