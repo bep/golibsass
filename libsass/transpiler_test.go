@@ -251,11 +251,29 @@ func BenchmarkTranspile(b *testing.B) {
 	}
 
 	b.Run("SCSS", func(b *testing.B) {
-		t := newTester(b, Options{OutputStyle: CompressedStyle})
+		t := newTester(b, Options{})
 		t.src = `div { p { color: #ccc; } }`
-		t.expect = "div p{color:#ccc}\n"
+		t.expect = "div p {\n  color: #ccc; }\n"
 		runBench(b, t)
 
+	})
+
+	b.Run("SCSS Parallel", func(b *testing.B) {
+		t := newTester(b, Options{})
+		t.src = `div { p { color: #ccc; } }`
+		t.expect = "div p {\n  color: #ccc; }\n"
+
+		b.RunParallel(func(pb *testing.PB) {
+			for pb.Next() {
+				result, err := t.transpiler.Execute(t.src)
+				if err != nil {
+					b.Fatal(err)
+				}
+				if result.CSS != t.expect {
+					b.Fatalf("Got: %q\n", result.CSS)
+				}
+			}
+		})
 	})
 
 	b.Run("Sass", func(b *testing.B) {
