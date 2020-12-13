@@ -16,6 +16,25 @@ import (
 	qt "github.com/frankban/quicktest"
 )
 
+const (
+	sassSample = `nav {
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li { display: inline-block; }
+
+  a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+  }
+}`
+	sassSampleTranspiled = "nav ul {\n  margin: 0;\n  padding: 0;\n  list-style: none; }\n\nnav li {\n  display: inline-block; }\n\nnav a {\n  display: block;\n  padding: 6px 12px;\n  text-decoration: none; }\n"
+)
+
 func TestTranspiler(t *testing.T) {
 	c := qt.New(t)
 
@@ -252,16 +271,16 @@ func BenchmarkTranspile(b *testing.B) {
 
 	b.Run("SCSS", func(b *testing.B) {
 		t := newTester(b, Options{})
-		t.src = `div { p { color: #ccc; } }`
-		t.expect = "div p {\n  color: #ccc; }\n"
+		t.src = sassSample
+		t.expect = sassSampleTranspiled
 		runBench(b, t)
 
 	})
 
 	b.Run("SCSS Parallel", func(b *testing.B) {
 		t := newTester(b, Options{})
-		t.src = `div { p { color: #ccc; } }`
-		t.expect = "div p {\n  color: #ccc; }\n"
+		t.src = sassSample
+		t.expect = sassSampleTranspiled
 
 		b.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
