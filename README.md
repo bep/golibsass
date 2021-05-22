@@ -1,7 +1,7 @@
 
 [![Build Status](https://travis-ci.org/bep/golibsass.svg?branch=master)](https://travis-ci.org/bep/golibsass)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bep/golibsass)](https://goreportcard.com/report/github.com/bep/golibsass)
-[![LibSass Version](https://img.shields.io/badge/LibSass-v3.6.4-blue)](https://github.com/sass/libsass)
+[![LibSass Version](https://img.shields.io/badge/LibSass-v3.6.5-blue)](https://github.com/sass/libsass)
 [![codecov](https://codecov.io/gh/bep/golibsass/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/golibsass)
 [![GoDoc](https://godoc.org/github.com/bep/golibsass/libsass?status.svg)](https://godoc.org/github.com/bep/golibsass/libsass)
 
