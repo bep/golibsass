@@ -5,6 +5,8 @@
 [![codecov](https://codecov.io/gh/bep/golibsass/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/golibsass)
 [![GoDoc](https://godoc.org/github.com/bep/golibsass/libsass?status.svg)](https://godoc.org/github.com/bep/golibsass/libsass)
 
+**Note:** LibSASS (the C++ library that this project wraps) is now deprecatd. You may want to try https://github.com/bep/godartsass
+
 The primary motivation for this project is to provide `SCSS` support to [Hugo](https://gohugo.io/). I welcome PRs with bug fixes. I will also consider adding functionality, but please raise an issue discussing it first.
 
 If you need more functionality than this project can provide you may want to have a look at [go-libsass](https://github.com/wellington/go-libsass).
