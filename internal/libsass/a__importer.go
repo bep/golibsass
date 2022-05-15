@@ -19,6 +19,7 @@ package libsass
 //   return BridgeImport(currPath, prev_path, ci);
 // }
 import "C"
+
 import (
 	"sync"
 	"unsafe"
@@ -37,7 +38,7 @@ var importsStore = &idMap{
 func AddImportResolver(opts SassOptions, resolver ImportResolver) int {
 	i := importsStore.Set(resolver)
 	// This looks unsafe, but LibSass is using void* to store an int.
-	// TODO(bep) this prevents us from "fail on go vet errors" in Travis.
+	// TODO(bep) this prevents us from "fail on go vet errors" in GitHub action.
 	id := unsafe.Pointer(uintptr(i))
 
 	importers := C.sass_make_importer_list(1)

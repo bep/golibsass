@@ -73,7 +73,6 @@ func TestTranspiler(t *testing.T) {
 				c.Assert(err, qt.IsNil)
 				c.Assert(result.CSS, qt.Equals, test.expect)
 			}
-
 		})
 
 	}
@@ -94,7 +93,6 @@ func TestError(t *testing.T) {
 }
 
 func TestSourceMapSettings(t *testing.T) {
-
 	c := qt.New(t)
 	src := `div { p { color: blue; } }`
 
@@ -132,11 +130,11 @@ func TestIncludePaths(t *testing.T) {
 
 	ioutil.WriteFile(colors, []byte(`
 $moo:       #f442d1 !default;
-`), 0644)
+`), 0o644)
 
 	ioutil.WriteFile(content, []byte(`
 content { color: #ccc; }
-`), 0644)
+`), 0o644)
 
 	c := qt.New(t)
 	src := `
@@ -157,11 +155,9 @@ div { p { color: $moo; } }`
 	result, err := transpiler.Execute(src)
 	c.Assert(err, qt.IsNil)
 	c.Assert(result.CSS, qt.Equals, "content{color:#ccc}div p{color:#f442d1}\n")
-
 }
 
 func TestConcurrentTranspile(t *testing.T) {
-
 	c := qt.New(t)
 
 	importResolver := func(url string, prev string) (string, string, bool) {
@@ -170,7 +166,8 @@ func TestConcurrentTranspile(t *testing.T) {
 
 	transpiler, err := New(Options{
 		OutputStyle:    CompressedStyle,
-		ImportResolver: importResolver})
+		ImportResolver: importResolver,
+	})
 
 	c.Assert(err, qt.IsNil)
 
@@ -216,7 +213,8 @@ func TestImportResolverConcurrent(t *testing.T) {
 			for j := 0; j < 100; j++ {
 				transpiler, err := New(Options{
 					OutputStyle:    CompressedStyle,
-					ImportResolver: createImportResolver(j)})
+					ImportResolver: createImportResolver(j),
+				})
 				c.Check(err, qt.IsNil)
 
 				src := `
@@ -236,7 +234,6 @@ div { p { width: $width; } }`
 		}()
 	}
 	wg.Wait()
-
 }
 
 func BenchmarkTranspile(b *testing.B) {
@@ -275,7 +272,6 @@ func BenchmarkTranspile(b *testing.B) {
 		t.src = sassSample
 		t.expect = sassSampleTranspiled
 		runBench(b, t)
-
 	})
 
 	b.Run("SCSS Parallel", func(b *testing.B) {
@@ -306,9 +302,7 @@ $color: #333;
 
 		t.expect = ".content-navigation{border-color:#333}\n"
 		runBench(b, t)
-
 	})
-
 }
 
 func TestParseOutputStyle(t *testing.T) {
@@ -319,5 +313,4 @@ func TestParseOutputStyle(t *testing.T) {
 	c.Assert(ParseOutputStyle("compressed"), qt.Equals, CompressedStyle)
 	c.Assert(ParseOutputStyle("EXPANDED"), qt.Equals, ExpandedStyle)
 	c.Assert(ParseOutputStyle("foo"), qt.Equals, NestedStyle)
-
 }

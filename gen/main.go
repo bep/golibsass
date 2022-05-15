@@ -59,9 +59,8 @@ func main() {
 		if err := ioutil.WriteFile(target, []byte(fmt.Sprintf(`#ifndef USE_LIBSASS_SRC
 #include "../../libsass_src/src/%s"
 #endif
-`, fi.Name())), 0644); err != nil {
+`, fi.Name())), 0o644); err != nil {
 			log.Fatal(err)
 		}
 	}
-
 }

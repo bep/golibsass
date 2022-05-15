@@ -9,6 +9,7 @@ package libsass
 // #include "sass/context.h"
 // #include "sass2scss.h"
 import "C"
+
 import (
 	"reflect"
 	"unsafe"
@@ -85,7 +86,6 @@ func SassContextGetSourceMapString(ctx SassContext) string {
 // SassDataContextGetContext function as declared in sass/context.h:61
 func SassDataContextGetContext(ctx SassDataContext) SassContext {
 	return (SassContext)(C.sass_data_context_get_context(ctx))
-
 }
 
 // SassDataContextGetOptions function as declared in sass/context.h:66
@@ -172,7 +172,6 @@ func SassOptionSetPrecision(o SassOptions, i int) {
 // SassOptionSetSourceComments function as declared in sass/context.h:93
 func SassOptionSetSourceComments(o SassOptions, b bool) {
 	C.sass_option_set_source_comments(o, C.bool(b))
-
 }
 
 // SassOptionSetSourceMapContents function as declared in sass/context.h:95
@@ -192,7 +191,6 @@ func SassOptionSetSourceMapFile(o SassOptions, s string) {
 // SassOptionSetSourceMapRoot function as declared in sass/context.h:106
 func SassOptionSetSourceMapRoot(o SassOptions, s string) {
 	C.sass_option_set_source_map_root(o, C.CString(s))
-
 }
 
 // SassToScss converts Sass to Scss using sass2scss.
@@ -206,5 +204,4 @@ func SassToScss(src string) string {
 	)
 
 	return C.GoString(chars)
-
 }

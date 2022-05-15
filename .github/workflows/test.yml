@@ -33,12 +33,8 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: "diff <(gofmt -d .) <(printf '')"
       shell: bash
-    - name: Vet
-      run: go vet ./...
     - name: Staticcheck
       run: staticcheck ./...
-    - name: Lint
-      run: golint ./...
     - name: Test
       run: go test -race ./libsass -coverprofile=coverage.txt -covermode=atomic
     - name: Upload coverage

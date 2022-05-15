@@ -27,7 +27,6 @@ body {
   color: $primary-color;
 }
 `)
-
 	if err != nil {
 		log.Fatal(err)
 	}
