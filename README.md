@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/bep/golibsass.svg?branch=master)](https://travis-ci.org/bep/golibsass)
+[![Tests on Linux, MacOS and Windows](https://github.com/bep/golibsass/workflows/Test/badge.svg)](https://github.com/bep/golibsass/actions?query=workflow:Test)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bep/golibsass)](https://goreportcard.com/report/github.com/bep/golibsass)
 [![LibSass Version](https://img.shields.io/badge/LibSass-v3.6.5-blue)](https://github.com/sass/libsass)
 [![codecov](https://codecov.io/gh/bep/golibsass/branch/master/graph/badge.svg)](https://codecov.io/gh/bep/golibsass)
