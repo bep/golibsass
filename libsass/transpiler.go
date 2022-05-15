@@ -1,4 +1,4 @@
-// Copyright © 2020 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
+// Copyright © 2022 Bjørn Erik Pedersen <bjorn.erik.pedersen@gmail.com>.
 //
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
@@ -7,12 +7,11 @@
 package libsass
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/bep/golibsass/internal/libsass"
+	"github.com/bep/golibsass/libsass/libsasserrors"
 )
 
 type libsassTranspiler struct {
@@ -81,7 +80,7 @@ func (t libsassTranspiler) Execute(src string) (Result, error) {
 	libsass.SassCompilerExecute(compiler)
 
 	if status := libsass.SassContextGetErrorStatus(ctx); status != 0 {
-		return result, jsonToError(libsass.SassContextGetErrorJSON(ctx))
+		return result, libsasserrors.JsonToError(libsass.SassContextGetErrorJSON(ctx))
 	}
 
 	result.CSS = libsass.SassContextGetOutputString(ctx)
@@ -158,21 +157,4 @@ type SourceMapOptions struct {
 	Contents       bool
 	OmitURL        bool
 	EnableEmbedded bool
-}
-
-func jsonToError(jsonstr string) (e Error) {
-	_ = json.Unmarshal([]byte(jsonstr), &e)
-	return
-}
-
-type Error struct {
-	Status  int    `json:"status"`
-	Column  int    `json:"column"`
-	File    string `json:"file"`
-	Line    int    `json:"line"`
-	Message string `json:"message"`
-}
-
-func (e Error) Error() string {
-	return fmt.Sprintf("file %q, line %d, col %d: %s ", e.File, e.Line, e.Column, e.Message)
 }

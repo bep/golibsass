@@ -13,6 +13,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/bep/golibsass/libsass/libsasserrors"
 	qt "github.com/frankban/quicktest"
 )
 
@@ -85,7 +86,7 @@ func TestError(t *testing.T) {
 	_, err = transpiler.Execute("\n\ndiv { color: $blue; }")
 	c.Assert(err, qt.Not(qt.IsNil))
 
-	lerr := err.(Error)
+	lerr := err.(libsasserrors.Error)
 	c.Assert(lerr.Line, qt.Equals, 3)
 	c.Assert(lerr.Column, qt.Equals, 14)
 	c.Assert(lerr.Message, qt.Equals, `Undefined variable: "$blue".`)
