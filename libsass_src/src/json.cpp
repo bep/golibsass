@@ -1286,7 +1286,10 @@ static void emit_number(SB *out, double num)
    * like 0.3 -> 0.299999999999999988898 .
    */
   char buf[64];
-  sprintf(buf, "%.16g", num);
+  // patched by @bep to get rid of warning on MacOS: 
+  //     "due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead".
+  //sprintf(buf, "%.16g", num);
+  snprintf(buf, sizeof(buf), "%.16g", num);
 
   if (number_is_valid(buf))
     sb_puts(out, buf);
