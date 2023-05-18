@@ -10,7 +10,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.19.x, 1.20.x]
+        go-version: [1.20.x]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -18,6 +18,9 @@ jobs:
       uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go-version }}
+    - if: matrix.os == 'windows-latest'
+      run: |
+        Choco-Install -PackageName mingw -ArgumentList "--version","10.2.0","--allow-downgrade"
     - name: Install staticcheck
       if: matrix.platform != 'windows-latest'
       run: go install honnef.co/go/tools/cmd/staticcheck@latest
@@ -35,11 +38,4 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: staticcheck ./...
     - name: Test
-      run: go test -race ./libsass -coverprofile=coverage.txt -covermode=atomic
-    - name: Upload coverage
-      if: success() && matrix.os == 'ubuntu-latest'
-      run: |
-        curl -s https://codecov.io/bash | bash
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      shell: bash
+      run: go test -race ./libsass
