@@ -19,10 +19,8 @@ jobs:
       with:
         go-version: ${{ matrix.go-version }}
     - name: Install staticcheck
+      if: matrix.platform != 'windows-latest'
       run: go install honnef.co/go/tools/cmd/staticcheck@latest
-      shell: bash
-    - name: Install golint
-      run: go install golang.org/x/lint/golint@latest
       shell: bash
     - name: Update PATH
       run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
@@ -34,6 +32,7 @@ jobs:
       run: "diff <(gofmt -d .) <(printf '')"
       shell: bash
     - name: Staticcheck
+      if: matrix.os != 'windows-latest'
       run: staticcheck ./...
     - name: Test
       run: go test -race ./libsass -coverprofile=coverage.txt -covermode=atomic
