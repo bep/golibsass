@@ -50,8 +50,8 @@ jobs:
       CC: ${{ matrix.config.cc }}
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - uses: ruby/setup-ruby@a6e6f86333f0a2523ece813039b8b4be04560854 # v1.190.0
       if: matrix.config.os == 'ubuntu-16.04'
       with:
         ruby-version: 2.6
@@ -145,8 +145,8 @@ jobs:
       run: |
         git config --system core.autocrlf false
         git config --system core.eol lf
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - uses: ruby/setup-ruby@a6e6f86333f0a2523ece813039b8b4be04560854 # v1.190.0
       with:
         ruby-version: 2.6
         bundler-cache: true
@@ -155,7 +155,7 @@ jobs:
     - name: Install ruby minitest module
       run: gem install minitest
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
     - name: Clone and checkout sassc repository
       run: git clone https://github.com/sass/sassc.git
     - name: Clone and checkout sass-spec repository
@@ -183,13 +183,13 @@ jobs:
       run: |
         git config --system core.autocrlf false
         git config --system core.eol lf
-    - uses: actions/checkout@v2
-    - uses: ruby/setup-ruby@v1
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    - uses: ruby/setup-ruby@a6e6f86333f0a2523ece813039b8b4be04560854 # v1.190.0
       with:
         ruby-version: 2.6
         bundler-cache: true
     - name: Set up MinGW
-      uses: egor-tensin/setup-mingw@v2
+      uses: egor-tensin/setup-mingw@84c781b557efd538dec66bde06988d81cd3138cf # v2.2.0
       with:
         platform: ${{ matrix.config.platform }}
     - name: Install ruby hrx module
@@ -215,4 +215,4 @@ jobs:
 
 
 #- name: Install LLVM and Clang
-#  uses: KyleMayes/install-llvm-action@v1.2.2
+#  uses: KyleMayes/install-llvm-action@82fd451e4380968e8336eefc5b8b9292a619de01 # v2.0.3
