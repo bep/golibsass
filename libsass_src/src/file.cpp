@@ -26,6 +26,7 @@
 #include "util.hpp"
 #include "util_string.hpp"
 #include "sass2scss.h"
+#include <errno.h>
 
 #ifdef _WIN32
 # include <windows.h>
@@ -478,7 +479,9 @@ namespace Sass {
         struct stat st;
         if (stat(path.c_str(), &st) == -1 || S_ISDIR(st.st_mode)) return 0;
         FILE* fd = std::fopen(path.c_str(), "rb");
-        if (fd == nullptr) return nullptr;
+        if (fd == nullptr) {
+           throw Exception::OperationError("error reading file \"" + path + "\": " + strerror(errno));
+        }
         const std::size_t size = st.st_size;
         char* contents = static_cast<char*>(malloc(st.st_size + 2 * sizeof(char)));
         if (std::fread(static_cast<void*>(contents), 1, size, fd) != size) {
