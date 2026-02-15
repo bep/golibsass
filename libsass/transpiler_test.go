@@ -48,7 +48,7 @@ func TestTranspiler(t *testing.T) {
 		name   string
 		opts   Options
 		src    string
-		expect interface{}
+		expect any
 	}{
 		{"Output style compressed", Options{OutputStyle: CompressedStyle}, "div { color: #ccc; }", "div{color:#ccc}\n"},
 		{"Invalid syntax", Options{OutputStyle: CompressedStyle}, "div { color: $white; }", false},
@@ -58,7 +58,6 @@ func TestTranspiler(t *testing.T) {
 		{"Precision", Options{Precision: 3}, "div { width: percentage(1 / 3); }", "div {\n  width: 33.333%; }\n"},
 	} {
 
-		test := test
 		c.Run(test.name, func(c *qt.C) {
 			b, ok := test.expect.(bool)
 			shouldFail := ok && !b
@@ -172,11 +171,9 @@ func TestConcurrentTranspile(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			for j := 0; j < 10; j++ {
+	for range 10 {
+		wg.Go(func() {
+			for range 10 {
 				src := `
 @import "colors";
 
@@ -188,7 +185,7 @@ div { p { color: $white; } }`
 					return
 				}
 			}
-		}()
+		})
 	}
 	wg.Wait()
 }
@@ -204,12 +201,10 @@ func TestImportResolverConcurrent(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	for range 10 {
+		wg.Go(func() {
 
-			for j := 0; j < 100; j++ {
+			for j := range 100 {
 				transpiler, err := New(Options{
 					OutputStyle:    CompressedStyle,
 					ImportResolver: createImportResolver(j),
@@ -221,7 +216,7 @@ func TestImportResolverConcurrent(t *testing.T) {
 
 div { p { width: $width; } }`
 
-				for k := 0; k < 10; k++ {
+				for range 10 {
 					result, err := transpiler.Execute(src)
 					c.Check(err, qt.IsNil)
 					c.Check(result.CSS, qt.Equals, fmt.Sprintf("div p{width:%d}\n", j))
@@ -230,7 +225,7 @@ div { p { width: $width; } }`
 					}
 				}
 			}
-		}()
+		})
 	}
 	wg.Wait()
 }
