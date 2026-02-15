@@ -55,10 +55,10 @@ func main() {
 
 		target := filepath.Join(dstDir, fi.Name())
 
-		if err := os.WriteFile(target, []byte(fmt.Sprintf(`#ifndef USE_LIBSASS_SRC
+		if err := os.WriteFile(target, fmt.Appendf(nil, `#ifndef USE_LIBSASS_SRC
 #include "../../libsass_src/src/%s"
 #endif
-`, fi.Name())), 0o644); err != nil {
+`, fi.Name()), 0o644); err != nil {
 			log.Fatal(err)
 		}
 	}
