@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -28,7 +27,7 @@ func main() {
 	// directory.
 	//
 	// The custom bindings are named with a "a__" prefix. Keep those.
-	fis, err := ioutil.ReadDir(dstDir)
+	fis, err := os.ReadDir(dstDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +41,7 @@ func main() {
 		os.Remove(filepath.Join(dstDir, fi.Name()))
 	}
 
-	fis, err = ioutil.ReadDir(srcDir)
+	fis, err = os.ReadDir(srcDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +55,7 @@ func main() {
 
 		target := filepath.Join(dstDir, fi.Name())
 
-		if err := ioutil.WriteFile(target, []byte(fmt.Sprintf(`#ifndef USE_LIBSASS_SRC
+		if err := os.WriteFile(target, []byte(fmt.Sprintf(`#ifndef USE_LIBSASS_SRC
 #include "../../libsass_src/src/%s"
 #endif
 `, fi.Name())), 0o644); err != nil {
