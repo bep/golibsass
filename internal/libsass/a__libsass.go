@@ -10,7 +10,6 @@ package libsass
 import "C"
 
 import (
-	"reflect"
 	"unsafe"
 )
 
@@ -21,11 +20,7 @@ func BridgeImport(currPath, prevPath *C.char, ci C.int) C.Sass_Import_List {
 	parent := C.GoString(prevPath)
 	rel := C.GoString(currPath)
 	clist := C.sass_make_import_list(1)
-	h := reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(clist)),
-		Len:  1, Cap: 1,
-	}
-	golist := *(*[]C.Sass_Import_Entry)(unsafe.Pointer(&h))
+	golist := unsafe.Slice((*C.Sass_Import_Entry)(unsafe.Pointer(clist)), 1)
 
 	resolver, ok := importsStore.Get(int(ci)).(ImportResolver)
 	if ok {

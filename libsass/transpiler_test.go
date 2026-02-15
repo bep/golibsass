@@ -7,7 +7,6 @@ package libsass
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -120,19 +119,19 @@ func TestSourceMapSettings(t *testing.T) {
 }
 
 func TestIncludePaths(t *testing.T) {
-	dir1, _ := ioutil.TempDir(os.TempDir(), "libsass-test-include-paths-dir1")
+	dir1, _ := os.MkdirTemp(os.TempDir(), "libsass-test-include-paths-dir1")
 	defer os.RemoveAll(dir1)
-	dir2, _ := ioutil.TempDir(os.TempDir(), "libsass-test-include-paths-dir2")
+	dir2, _ := os.MkdirTemp(os.TempDir(), "libsass-test-include-paths-dir2")
 	defer os.RemoveAll(dir2)
 
 	colors := filepath.Join(dir1, "_colors.scss")
 	content := filepath.Join(dir2, "_content.scss")
 
-	ioutil.WriteFile(colors, []byte(`
+	os.WriteFile(colors, []byte(`
 $moo:       #f442d1 !default;
 `), 0o644)
 
-	ioutil.WriteFile(content, []byte(`
+	os.WriteFile(content, []byte(`
 content { color: #ccc; }
 `), 0o644)
 
