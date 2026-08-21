@@ -10,6 +10,9 @@ on:
       - master
       - develop
 
+permissions:
+  contents: read
+
 jobs:
 
   linux-and-mac:
@@ -50,8 +53,8 @@ jobs:
       CC: ${{ matrix.config.cc }}
 
     steps:
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-    - uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1.288.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       if: matrix.config.os == 'ubuntu-16.04'
       with:
         ruby-version: 2.6
@@ -145,8 +148,8 @@ jobs:
       run: |
         git config --system core.autocrlf false
         git config --system core.eol lf
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-    - uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1.288.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: 2.6
         bundler-cache: true
@@ -155,7 +158,7 @@ jobs:
     - name: Install ruby minitest module
       run: gem install minitest
     - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
+      uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
     - name: Clone and checkout sassc repository
       run: git clone https://github.com/sass/sassc.git
     - name: Clone and checkout sass-spec repository
@@ -183,13 +186,13 @@ jobs:
       run: |
         git config --system core.autocrlf false
         git config --system core.eol lf
-    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-    - uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1.288.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
       with:
         ruby-version: 2.6
         bundler-cache: true
     - name: Set up MinGW
-      uses: egor-tensin/setup-mingw@41b837e47d7f85214629d255b9c4bc3fcbe9fd63 # v3
+      uses: egor-tensin/setup-mingw@41b837e47d7f85214629d255b9c4bc3fcbe9fd63 # v3.0
       with:
         platform: ${{ matrix.config.platform }}
     - name: Install ruby hrx module
